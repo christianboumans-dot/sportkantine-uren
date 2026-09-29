@@ -19,7 +19,6 @@ button{background:#f28c00;color:#fff;border:0;font-weight:bold}button.dark{backg
 <main>
 <section id="login" class="page">
 <div class="card login"><h3>Medewerker aanmelden</h3>
-<button class="dark" onclick="adminLogin()">🔐 Beheer</button>
 <label>Naam</label><select id="loginName"></select>
 <label>Persoonlijke PIN</label><input id="loginPin" type="password" inputmode="numeric" autocomplete="current-password">
 <button onclick="login()">Aanmelden</button><div id="loginMsg" class="msg"></div>
@@ -74,7 +73,19 @@ function logout(){localStorage.removeItem("kantineUser");current=null;data=[];$(
 function hours(s,e,b){let a=s.split(":").map(Number),z=e.split(":").map(Number),m=z[0]*60+z[1]-(a[0]*60+a[1]);if(m<0)m+=1440;return Math.max(0,m-Number(b||0))/60}
 function save(){let w=$("work").value;if(!$("date").value||!$("start").value||!$("end").value){$("msg").textContent="Vul datum, begin en einde in.";return}if(w==="Overige"&&!$("other").value.trim()){$("msg").textContent="Vul de overige werkzaamheden in.";return}$("msg").textContent="Opslaan...";
 post({action:"addShift",employeeId:current.id,employee:current.name,date:$("date").value,start:$("start").value,end:$("end").value,breakMin:$("break").value||0,hours:hours($("start").value,$("end").value,$("break").value),work:w,other:$("other").value,note:$("note").value},ok=>{$("msg").textContent=ok?"Dienst opgeslagen.":"Opslaan mislukt.";if(ok){$("msg").className="msg ok";$("note").value="";$("other").value="";loadEmployeeData()}})}
-function renderData(){let now=new Date(),ym=now.toISOString().slice(0,7),mt=0,yt=0;data.forEach(x=>{let h=+x.hours||0;yt+=h;if(String(x.date).slice(0,7)===ym)mt+=h});$("month").textContent=mt.toFixed(2).replace(".",",")+" uur";$("year").textContent=yt.toFixed(2).replace(".",",")+" uur";$("rows").innerHTML=data.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("")}
+function displayDate(v){
+  let s=String(v||"").trim();
+
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    let p=s.split("-");
+    return p[2]+"-"+p[1]+"-"+p[0];
+  }
+
+  return s;
+}
+function renderData(){let now=new Date(),ym=now.toISOString().slice(0,7),mt=0,yt=0;data.forEach(x=>{let h=+x.hours||0;yt+=h;if(String(x.date).slice(0,7)===ym)mt+=h});$("month").textContent=mt.toFixed(2).replace(".",",")+" uur";$("year").textContent=yt.toFixed(2).replace(".",",")+" uur";$("rows").innerHTML=data.slice().reverse().map(x=>`<tr>
+<td>${displayDate(x.date)}</td>
+<td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("")}
 function renderCalendar(){let ym=$("calMonth").value,[y,m]=ym.split("-").map(Number),days=new Date(y,m,0).getDate(),h="<div class='grid'>";for(let i=1;i<=days;i++){let ds=ym+"-"+String(i).padStart(2,"0"),a=data.filter(x=>x.date===ds),tot=a.reduce((s,x)=>s+(+x.hours||0),0);h+=`<div class='card'><b>${i}</b><br>${tot?tot.toFixed(2)+" uur":"—"}<br><span class='msg'>${a.map(x=>x.start+"-"+x.end+" "+x.work).join("<br>")}</span></div>`}$("cal").innerHTML=h+"</div>"}
 $("calMonth").onchange=renderCalendar;
 
