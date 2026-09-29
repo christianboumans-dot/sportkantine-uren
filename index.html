@@ -106,6 +106,13 @@ function showAdmin(id){document.querySelectorAll(".adminPage").forEach(x=>x.clas
 function renderStaff(){$("staffRows").innerHTML=adminEmployees.map(e=>`<tr><td>${e.name}</td><td><span class="badge ${e.active?"active":"inactive"}">${e.active?"Actief":"Inactief"}</span></td><td><input id="pin-${e.id}" value="${e.hasPin?"":" "}" placeholder="${e.hasPin?"PIN ingesteld":"Nog geen PIN"}"><button onclick="setPin('${e.id}')">PIN opslaan</button></td><td><button class="dark" onclick="toggleEmployee('${e.id}',${!e.active})">${e.active?"Deactiveren":"Activeren"}</button><button class="red" onclick="deleteEmployee('${e.id}','${e.name.replace(/'/g,"\\'")}')">🗑️ Verwijderen</button></td></tr>`).join("")}
 function setPin(id){let pin=$("pin_"+id).value.trim();if(!pin){alert("Vul een PIN in.");return}post({action:"setPin",id,pin},()=>{adminMsg.textContent="PIN opgeslagen.";adminLoginRefresh()})}
 function toggleEmployee(id,active){post({action:"setEmployeeActive",id,active},()=>adminLoginRefresh())}
+
+function deleteEmployee(id,name){
+  if(!confirm("Weet je zeker dat je "+name+" wilt verwijderen?"))return;
+  post({action:"deleteEmployee",id},()=>adminLoginRefresh());
+}
+
+function addEmployee(){
 function addEmployee(){let name=$("newName").value.trim(),pin=$("newPin").value.trim();if(!name){$("adminMsg").textContent="Vul een naam in.";return}if(!pin){$("adminMsg").textContent="Geef een PIN op.";return}post({action:"addEmployee",name,pin},()=>{$("adminMsg").textContent="Werknemer toegevoegd.";$("newName").value="";$("newPin").value="";adminLoginRefresh()})}
 function adminLoginRefresh(){jsonp({action:"adminData"},r=>{adminEmployees=r.employees||[];adminData=r.data||[];renderStaff();renderAll()})}
 function renderAll(){$("allRows").innerHTML=adminData.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${x.employee}</td><td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("")}
