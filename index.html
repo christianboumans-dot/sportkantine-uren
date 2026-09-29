@@ -1,144 +1,91 @@
 <!doctype html>
-<html lang="nl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f28c00">
-<title>Sportkantine Uren</title>
+<html lang="nl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f28c00"><title>Sportkantine Uren</title>
 <style>
 *{box-sizing:border-box}body{font-family:Arial;margin:0;background:#f3f3f3;color:#222}
-header{background:#111;color:#fff;padding:15px;text-align:center}main{max-width:950px;margin:auto;padding:14px}
-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}nav button{margin:0}
+header{background:#111;color:#fff;padding:16px;text-align:center}main{max-width:950px;margin:auto;padding:14px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}nav button{margin:0}
 .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 label{display:block;font-weight:bold;margin-top:9px}input,select,textarea,button{width:100%;padding:11px;margin-top:5px;border:1px solid #ccc;border-radius:8px;font-size:16px}
 button{background:#f28c00;color:#fff;border:0;font-weight:bold}button.dark{background:#222}button.red{background:#b3261e}
 .hidden{display:none}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}
 .badge{padding:4px 8px;border-radius:20px;background:#ddd;font-size:12px}.active{background:#d9f3df}.inactive{background:#eee}
-.stat{font-size:25px;font-weight:bold}.msg{font-size:13px;color:#666;margin-top:8px}
-.ok{color:#16803c;font-weight:bold}.err{color:#b3261e;font-weight:bold}
-</style>
-</head>
-<body>
-<header><h2>Sportkantine Uren</h2><div id="status">Verbinden...</div></header>
+.stat{font-size:25px;font-weight:bold}.msg{font-size:13px;color:#666;margin-top:8px}.ok{color:#16803c;font-weight:bold}.err{color:#b3261e;font-weight:bold}
+.login{max-width:430px;margin:20px auto}
+</style></head><body>
+<header><h2>Sportkantine Uren</h2><div id="status">Verbinden...</div><div id="who"></div></header>
 <main>
-<nav>
-<button onclick="show('register')">➕ Dienst</button>
-<button onclick="show('overview')">📊 Overzicht</button>
-<button onclick="show('calendar')">📅 Kalender</button>
-<button onclick="adminLogin()">⚙️ Beheer</button>
-</nav>
-
-<section id="register" class="page">
-<div class="card"><h3>Werkdienst registreren</h3>
-<div class="grid">
-<div><label>Medewerker</label><select id="employee"></select></div>
-<div><label>Datum</label><input id="date" type="date"></div>
-<div><label>Begin</label><input id="start" type="time"></div>
-<div><label>Einde</label><input id="end" type="time"></div>
-<div><label>Pauze (minuten)</label><input id="break" type="number" min="0" value="0"></div>
-<div><label>Werkzaamheid</label><select id="work"><option>Bar</option><option>Keuken</option><option>Poetsen</option><option>Overige</option></select></div>
-</div>
-<div id="otherBox" class="hidden"><label>Overige werkzaamheden</label><input id="other"></div>
-<label>Opmerking</label><textarea id="note"></textarea>
-<button onclick="save()">Dienst opslaan</button><div id="msg" class="msg"></div>
+<section id="login" class="page">
+<div class="card login"><h3>Medewerker aanmelden</h3>
+<label>Naam</label><select id="loginName"></select>
+<label>Persoonlijke PIN</label><input id="loginPin" type="password" inputmode="numeric" autocomplete="current-password">
+<button onclick="login()">Aanmelden</button><div id="loginMsg" class="msg"></div>
 </div></section>
 
-<section id="overview" class="page hidden">
-<div class="card"><h3>Urenoverzicht</h3>
-<div class="grid"><div><div>Deze maand</div><div id="month" class="stat">0,00 uur</div></div><div><div>Dit jaar</div><div id="year" class="stat">0,00 uur</div></div></div>
-<label>Medewerker</label><select id="filterEmployee" onchange="renderData()"></select>
-</div>
-<div class="card"><h3>Registraties</h3><div style="overflow:auto"><table><thead><tr><th>Datum</th><th>Medewerker</th><th>Tijd</th><th>Uren</th><th>Werk</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+<section id="app" class="hidden">
+<nav><button onclick="show('register')">➕ Dienst</button><button onclick="show('overview')">📊 Mijn overzicht</button><button onclick="show('calendar')">📅 Kalender</button><button onclick="logout()">🚪 Uitloggen</button></nav>
+
+<section id="register" class="page"><div class="card"><h3>Werkdienst registreren</h3>
+<div class="grid"><div><label>Medewerker</label><input id="employeeLocked" disabled></div>
+<div><label>Datum</label><input id="date" type="date"></div><div><label>Begin</label><input id="start" type="time"></div><div><label>Einde</label><input id="end" type="time"></div>
+<div><label>Pauze (minuten)</label><input id="break" type="number" min="0" value="0"></div>
+<div><label>Werkzaamheid</label><select id="work"><option>Bar</option><option>Keuken</option><option>Poetsen</option><option>Overige</option></select></div></div>
+<div id="otherBox" class="hidden"><label>Overige werkzaamheden</label><input id="other"></div>
+<label>Opmerking</label><textarea id="note"></textarea><button onclick="save()">Dienst opslaan</button><div id="msg" class="msg"></div>
+</div></section>
+
+<section id="overview" class="page hidden"><div class="card"><h3>Mijn uren</h3><div class="grid"><div>Deze maand<div id="month" class="stat">0,00 uur</div></div><div>Dit jaar<div id="year" class="stat">0,00 uur</div></div></div></div>
+<div class="card"><div style="overflow:auto"><table><thead><tr><th>Datum</th><th>Tijd</th><th>Uren</th><th>Werk</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
+
+<section id="calendar" class="page hidden"><div class="card"><h3>Mijn kalender</h3><input id="calMonth" type="month"><div id="cal" style="margin-top:15px"></div></div></section>
 </section>
 
-<section id="calendar" class="page hidden">
-<div class="card"><h3>Kalender</h3><div class="grid"><input id="calMonth" type="month"><select id="calEmp"></select></div>
-<div id="cal" style="margin-top:15px"></div></div>
-</section>
-
-<section id="admin" class="page hidden">
-<div class="card"><h3>Personeel beheren</h3>
-<div class="grid"><div><label>Naam werknemer</label><input id="newName"></div><div><label>Pincode (optioneel)</label><input id="newPin" inputmode="numeric"></div></div>
-<button onclick="addEmployee()">➕ Werknemer toevoegen</button><div id="adminMsg" class="msg"></div>
-</div>
-<div class="card"><h3>Werknemers</h3><div style="overflow:auto"><table><thead><tr><th>Naam</th><th>Status</th><th>Actie</th></tr></thead><tbody id="staff"></tbody></table></div></div>
+<section id="admin" class="hidden">
+<nav><button onclick="showAdmin('staff')">👥 Personeel</button><button onclick="showAdmin('adminData')">📊 Alle uren</button><button onclick="adminLogout()">🚪 Beheerder uitloggen</button></nav>
+<section id="staff" class="adminPage"><div class="card"><h3>Personeel beheren</h3><div class="grid"><div><label>Naam werknemer</label><input id="newName"></div><div><label>PIN</label><input id="newPin" inputmode="numeric" maxlength="8"></div></div>
+<button onclick="addEmployee()">➕ Werknemer toevoegen</button><div id="adminMsg" class="msg"></div></div>
+<div class="card"><h3>Werknemers</h3><div style="overflow:auto"><table><thead><tr><th>Naam</th><th>Status</th><th>PIN</th><th>Actie</th></tr></thead><tbody id="staffRows"></tbody></table></div></div></section>
+<section id="adminData" class="adminPage hidden"><div class="card"><h3>Alle uren</h3><div style="overflow:auto"><table><thead><tr><th>Datum</th><th>Medewerker</th><th>Tijd</th><th>Uren</th><th>Werk</th></tr></thead><tbody id="allRows"></tbody></table></div></div></section>
 </section>
 </main>
-
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwffIYCFBU8RXLfMcjOsOSheqlOcCdUGS5UaKhZWP_2BDCzCoY1qij4ma6t8QY1WNYq/exec";
-const ADMIN_PIN="1234";
-let employees=[],data=[];
+const API_URL="https://script.google.com/macros/s/AKfycbwffIYCFBU8RXLfMcjOsOSheqlOcCdUGS5UaKhZWP_2BDCzCoY1qij4ma6t8QY1WNYq/exec", ADMIN_PIN="1234";
+let publicEmployees=[],data=[],current=null,adminEmployees=[],adminData=[];
 const $=id=>document.getElementById(id);
-$("date").value=new Date().toISOString().slice(0,10);
-$("calMonth").value=new Date().toISOString().slice(0,7);
+$("date").value=new Date().toISOString().slice(0,10);$("calMonth").value=new Date().toISOString().slice(0,7);
 $("work").onchange=()=>$("otherBox").classList.toggle("hidden",$("work").value!=="Overige");
 
-function show(id){document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");if(id==="overview")renderData();if(id==="calendar")renderCalendar();}
-function adminLogin(){let p=prompt("Beheerder pincode:");if(p===ADMIN_PIN){show("admin");renderStaff();}else if(p!==null)alert("Onjuiste pincode.");}
-function hours(s,e,b){let a=s.split(":").map(Number),z=e.split(":").map(Number),m=z[0]*60+z[1]-(a[0]*60+a[1]);if(m<0)m+=1440;return Math.max(0,m-Number(b||0))/60;}
+function jsonp(params,cb){
+ const name="cb_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+ window[name]=r=>{try{cb(r)}finally{delete window[name];s.remove()}};
+ const s=document.createElement("script"),q=new URLSearchParams(params);q.set("callback",name);q.set("t",Date.now());s.src=API_URL+"?"+q.toString();s.onerror=()=>{delete window[name];s.remove();cb({ok:false,error:"Verbinding mislukt"})};document.body.appendChild(s);
+}
+function post(payload,done){const f=new URLSearchParams(payload);fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:f.toString()}).then(()=>setTimeout(()=>done(true),700)).catch(()=>done(false));}
+function loadPublic(){jsonp({action:"public"},r=>{publicEmployees=r.employees||[];$("status").textContent="Online";$("status").className="ok";fillLogin();})}
+function fillLogin(){$("loginName").innerHTML=publicEmployees.filter(x=>x.active).map(x=>`<option value="${x.name}">${x.name}</option>`).join("")||"<option>Geen actieve medewerkers</option>";}
+function login(){let name=$("loginName").value,pin=$("loginPin").value.trim();if(!name||!pin){$("loginMsg").textContent="Vul naam en PIN in.";return}$("loginMsg").textContent="Aanmelden...";
+jsonp({action:"login",name,pin},r=>{if(r.ok){current=r;localStorage.setItem("kantineUser",JSON.stringify(r));$("login").classList.add("hidden");$("app").classList.remove("hidden");$("who").textContent="Ingelogd als "+r.name;$("employeeLocked").value=r.name;loadEmployeeData()}else $("loginMsg").textContent=r.error||"Aanmelden mislukt."})}
+function loadEmployeeData(){jsonp({action:"employeeData",id:current.id},r=>{data=r.data||[];renderData();renderCalendar()})}
+function show(id){document.querySelectorAll("#app .page").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");if(id==="overview")renderData();if(id==="calendar")renderCalendar()}
+function logout(){localStorage.removeItem("kantineUser");current=null;data=[];$("app").classList.add("hidden");$("login").classList.remove("hidden");$("who").textContent="";$("loginPin").value=""}
+function hours(s,e,b){let a=s.split(":").map(Number),z=e.split(":").map(Number),m=z[0]*60+z[1]-(a[0]*60+a[1]);if(m<0)m+=1440;return Math.max(0,m-Number(b||0))/60}
+function save(){let w=$("work").value;if(!$("date").value||!$("start").value||!$("end").value){$("msg").textContent="Vul datum, begin en einde in.";return}if(w==="Overige"&&!$("other").value.trim()){$("msg").textContent="Vul de overige werkzaamheden in.";return}$("msg").textContent="Opslaan...";
+post({action:"addShift",employeeId:current.id,employee:current.name,date:$("date").value,start:$("start").value,end:$("end").value,breakMin:$("break").value||0,hours:hours($("start").value,$("end").value,$("break").value),work:w,other:$("other").value,note:$("note").value},ok=>{$("msg").textContent=ok?"Dienst opgeslagen.":"Opslaan mislukt.";if(ok){$("msg").className="msg ok";$("note").value="";$("other").value="";loadEmployeeData()}})}
+function renderData(){let now=new Date(),ym=now.toISOString().slice(0,7),mt=0,yt=0;data.forEach(x=>{let h=+x.hours||0;yt+=h;if(String(x.date).slice(0,7)===ym)mt+=h});$("month").textContent=mt.toFixed(2).replace(".",",")+" uur";$("year").textContent=yt.toFixed(2).replace(".",",")+" uur";$("rows").innerHTML=data.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("")}
+function renderCalendar(){let ym=$("calMonth").value,[y,m]=ym.split("-").map(Number),days=new Date(y,m,0).getDate(),h="<div class='grid'>";for(let i=1;i<=days;i++){let ds=ym+"-"+String(i).padStart(2,"0"),a=data.filter(x=>x.date===ds),tot=a.reduce((s,x)=>s+(+x.hours||0),0);h+=`<div class='card'><b>${i}</b><br>${tot?tot.toFixed(2)+" uur":"—"}<br><span class='msg'>${a.map(x=>x.start+"-"+x.end+" "+x.work).join("<br>")}</span></div>`}$("cal").innerHTML=h+"</div>"}
+$("calMonth").onchange=renderCalendar;
 
-function populate(){
- let active=employees.filter(x=>x.active);
- $("employee").innerHTML=active.length?active.map(x=>`<option value="${x.id}">${x.name}</option>`).join(""):"<option value=''>Geen actieve werknemers</option>";
- $("filterEmployee").innerHTML='<option value="">Alle medewerkers</option>'+active.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
- $("calEmp").innerHTML='<option value="">Alle medewerkers</option>'+active.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
-}
-
-function load(){
- $("status").textContent="Verbinden...";
- let cb="cb_"+Date.now();
- window[cb]=function(r){
-   try{employees=r.employees||[];data=r.data||[];populate();renderData();renderCalendar();$("status").textContent="Online";$("status").className="ok";}
-   catch(e){$("status").textContent="Fout bij laden";}
-   finally{delete window[cb];script.remove();}
- };
- let script=document.createElement("script");
- script.src=API_URL+"?callback="+cb+"&t="+Date.now();
- script.onerror=function(){$("status").textContent="Verbinding mislukt";$("status").className="err";delete window[cb];script.remove();};
- document.body.appendChild(script);
-}
-
-function post(payload,done){
- let form=new URLSearchParams();
- Object.keys(payload).forEach(k=>form.append(k,payload[k]==null?"":payload[k]));
- fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:form.toString()})
- .then(()=>setTimeout(()=>{load();if(done)done(true);},700))
- .catch(()=>{if(done)done(false);});
-}
-
-function save(){
- let emp=$("employee").value,w=$("work").value;
- if(!emp||!$("date").value||!$("start").value||!$("end").value){$("msg").textContent="Vul medewerker, datum, begin en einde in.";return;}
- if(w==="Overige"&&!$("other").value.trim()){$("msg").textContent="Vul de overige werkzaamheden in.";return;}
- let e=employees.find(x=>x.id===emp);
- let d={action:"addShift",employeeId:emp,employee:e.name,date:$("date").value,start:$("start").value,end:$("end").value,breakMin:$("break").value||0,hours:hours($("start").value,$("end").value,$("break").value),work:w,other:$("other").value,note:$("note").value};
- $("msg").textContent="Opslaan...";
- post(d,ok=>{if(ok){$("msg").textContent="Dienst opgeslagen."; $("msg").className="msg ok"; $("note").value="";$("other").value="";}else{$("msg").textContent="Opslaan mislukt.";}});
-}
-
-function addEmployee(){
- let name=$("newName").value.trim();if(!name){$("adminMsg").textContent="Vul een naam in.";return;}
- if(employees.some(x=>x.active&&x.name.toLowerCase()===name.toLowerCase())){$("adminMsg").textContent="Deze werknemer bestaat al.";return;}
- $("adminMsg").textContent="Toevoegen...";
- post({action:"addEmployee",name:name,pin:$("newPin").value},ok=>{$("adminMsg").textContent=ok?"Werknemer toegevoegd.":"Toevoegen mislukt.";$("newName").value="";$("newPin").value="";});
-}
-
-function toggleEmployee(id,active){post({action:"setEmployeeActive",id:id,active:active},()=>load());}
-function renderStaff(){$("staff").innerHTML=employees.map(e=>`<tr><td>${e.name}</td><td><span class="badge ${e.active?'active':'inactive'}">${e.active?'Actief':'Inactief'}</span></td><td><button class="${e.active?'red':'dark'}" onclick="toggleEmployee('${e.id}',${!e.active})">${e.active?'Deactiveren':'Activeren'}</button></td></tr>`).join("");}
-function renderData(){
- let f=$("filterEmployee").value||"",now=new Date(),ym=now.toISOString().slice(0,7),mt=0,yt=0;
- data.forEach(x=>{let h=+x.hours||0;yt+=h;if(String(x.date).slice(0,7)===ym)mt+=h;});
- $("month").textContent=mt.toFixed(2).replace(".",",")+" uur";$("year").textContent=yt.toFixed(2).replace(".",",")+" uur";
- let rows=data.filter(x=>!f||x.employeeId===f).slice().reverse();
- $("rows").innerHTML=rows.map(x=>`<tr><td>${x.date}</td><td>${x.employee}</td><td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("");
-}
-function renderCalendar(){
- let ym=$("calMonth").value,emp=$("calEmp").value,arr=data.filter(x=>String(x.date).slice(0,7)===ym&&(!emp||x.employeeId===emp));
- let [y,m]=ym.split("-").map(Number),days=new Date(y,m,0).getDate(),h="<div class='grid'>";
- for(let i=1;i<=days;i++){let ds=ym+"-"+String(i).padStart(2,"0"),a=arr.filter(x=>x.date===ds),tot=a.reduce((s,x)=>s+(+x.hours||0),0);h+=`<div class='card'><b>${i}</b><br>${tot?tot.toFixed(2)+" uur":"—"}<br><span class='msg'>${a.map(x=>x.employee+" "+x.start+"-"+x.end).join("<br>")}</span></div>`;}
- $("cal").innerHTML=h+"</div>";
-}
-$("calMonth").onchange=renderCalendar;$("calEmp").onchange=renderCalendar;load();
+function adminLogin(){let p=prompt("Beheerder pincode:");if(p!=="1234"){if(p!==null)alert("Onjuiste pincode.");return}jsonp({action:"adminData"},r=>{if(r.employees){adminEmployees=r.employees;adminData=r.data||[];$("login").classList.add("hidden");$("app").classList.add("hidden");$("admin").classList.remove("hidden");$("who").textContent="Beheerder";renderStaff();renderAll()}})}
+function adminLogout(){$("admin").classList.add("hidden");$("login").classList.remove("hidden");$("who").textContent=""}
+function showAdmin(id){document.querySelectorAll(".adminPage").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");if(id==="adminData")renderAll()}
+function renderStaff(){$("staffRows").innerHTML=adminEmployees.map(e=>`<tr><td>${e.name}</td><td><span class="badge ${e.active?'active':'inactive'}">${e.active?'Actief':'Inactief'}</span></td><td><input id="pin_${e.id}" placeholder="${e.hasPin?'PIN ingesteld':'Nog geen PIN'}" inputmode="numeric" maxlength="8"><button onclick="setPin('${e.id}')">PIN opslaan</button></td><td><button class="${e.active?'red':'dark'}" onclick="toggleEmployee('${e.id}',${!e.active})">${e.active?'Deactiveren':'Activeren'}</button></td></tr>`).join("")}
+function setPin(id){let pin=$("pin_"+id).value.trim();if(!pin){alert("Vul een PIN in.");return}post({action:"setPin",id,pin},()=>{adminMsg.textContent="PIN opgeslagen.";adminLoginRefresh()})}
+function toggleEmployee(id,active){post({action:"setEmployeeActive",id,active},()=>adminLoginRefresh())}
+function addEmployee(){let name=$("newName").value.trim(),pin=$("newPin").value.trim();if(!name){$("adminMsg").textContent="Vul een naam in.";return}if(!pin){$("adminMsg").textContent="Geef een PIN op.";return}post({action:"addEmployee",name,pin},()=>{$("adminMsg").textContent="Werknemer toegevoegd.";$("newName").value="";$("newPin").value="";adminLoginRefresh()})}
+function adminLoginRefresh(){jsonp({action:"adminData"},r=>{adminEmployees=r.employees||[];adminData=r.data||[];renderStaff();renderAll()})}
+function renderAll(){$("allRows").innerHTML=adminData.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${x.employee}</td><td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("")}
+loadPublic();
+(function(){try{let u=JSON.parse(localStorage.getItem("kantineUser"));if(u&&u.id){current=u;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("who").textContent="Ingelogd als "+u.name;$("employeeLocked").value=u.name;loadEmployeeData()}}catch(e){}})();
 </script></body></html>
