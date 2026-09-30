@@ -114,7 +114,24 @@ function deleteEmployee(id,name){
 
 function addEmployee(){let name=$("newName").value.trim(),pin=$("newPin").value.trim();if(!name){$("adminMsg").textContent="Vul een naam in.";return}if(!pin){$("adminMsg").textContent="Geef een PIN op.";return}post({action:"addEmployee",name,pin},()=>{$("adminMsg").textContent="Werknemer toegevoegd.";$("newName").value="";$("newPin").value="";adminLoginRefresh()})}
 function adminLoginRefresh(){jsonp({action:"adminData"},r=>{adminEmployees=r.employees||[];adminData=r.data||[];renderStaff();renderAll()})}
-function renderAll(){$("allRows").innerHTML=adminData.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${x.employee}</td><td>${x.start}–${x.end}</td><td>${(+x.hours).toFixed(2)}</td><td>${x.work}${x.other?": "+x.other:""}</td></tr>`).join("")}
+function renderAll(){
+  let total=0;
+
+  $("allRows").innerHTML=adminData.slice().reverse().map(x=>{
+    let h=+x.hours||0;
+    total+=h;
+
+    return `<tr>
+      <td>${displayDate(x.date)}</td>
+      <td>${x.employee}</td>
+      <td>${x.start}–${x.end}</td>
+      <td>${h.toFixed(2)}</td>
+      <td>${x.work}${x.other?": "+x.other:""}</td>
+    </tr>`;
+  }).join("");
+
+  $("allTotal").textContent=total.toFixed(2).replace(".",",")+" uur";
+}
 loadPublic();
 (function(){try{let u=JSON.parse(localStorage.getItem("kantineUser"));if(u&&u.id){current=u;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("who").textContent="Ingelogd als "+u.name;$("employeeLocked").value=u.name;loadEmployeeData()}}catch(e){}})();
 </script></body></html>
