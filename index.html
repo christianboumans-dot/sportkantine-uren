@@ -15,7 +15,7 @@ button{background:#f28c00;color:#fff;border:0;font-weight:bold}button.dark{backg
 .stat{font-size:25px;font-weight:bold}.msg{font-size:13px;color:#666;margin-top:8px}.ok{color:#16803c;font-weight:bold}.err{color:#b3261e;font-weight:bold}
 .login{max-width:430px;margin:20px auto}
 </style></head><body>
-<header><h2>Sportkantine Uren</h2><div id="status">Verbinden...</div><div id="who"></div></header>
+<header><h2>Sportkantine Uren vv Maastricht West</h2><div id="status">Verbinden...</div><div id="who"></div></header>
 <main>
 <section id="login" class="page">
 <div class="card login"><h3>Medewerker aanmelden</h3>
@@ -159,17 +159,23 @@ function renderAll(){
   const yearFilter=$("filterYear").value;
 
   const filtered=adminData.filter(x=>{
-    if(employeeFilter && x.employeeId!==employeeFilter)return false;
+    if(employeeFilter && String(x.employeeId)!==String(employeeFilter)){
+      return false;
+    }
 
-    if(monthFilter && String(x.date).slice(0,7)!==monthFilter)return false;
+    if(monthFilter && String(x.date).slice(0,7)!==monthFilter){
+      return false;
+    }
 
-    if(yearFilter && String(x.date).slice(0,4)!==yearFilter)return false;
+    if(yearFilter && String(x.date).slice(0,4)!==yearFilter){
+      return false;
+    }
 
     return true;
   });
 
   $("allRows").innerHTML=filtered.slice().reverse().map(x=>{
-    let h=+x.hours||0;
+    const h=Number(x.hours)||0;
     total+=h;
 
     return `<tr>
@@ -181,28 +187,24 @@ function renderAll(){
     </tr>`;
   }).join("");
 
-  $("allTotal").textContent=total.toFixed(2).replace(".",",")+" uur";
+  $("allTotal").textContent=
+    total.toFixed(2).replace(".",",")+" uur";
 
   fillFilters();
 }
- function fillFilters(){
+
+function fillFilters(){
   const employeeSelect=$("filterEmployee");
   const yearSelect=$("filterYear");
 
   const selectedEmployee=employeeSelect.value;
   const selectedYear=yearSelect.value;
 
-  const employees={};
-
-  adminEmployees.forEach(e=>{
-    employees[e.id]=e.name;
-  });
-
   employeeSelect.innerHTML=
     `<option value="">Alle medewerkers</option>`+
-    Object.entries(employees)
-      .map(([id,name])=>`<option value="${id}">${name}</option>`)
-      .join("");
+    adminEmployees.map(e=>
+      `<option value="${e.id}">${e.name}</option>`
+    ).join("");
 
   employeeSelect.value=selectedEmployee;
 
@@ -218,28 +220,28 @@ function renderAll(){
 
   yearSelect.value=selectedYear;
 }
- function clearFilters(){
+
+function clearFilters(){
   $("filterEmployee").value="";
   $("filterMonth").value="";
   $("filterYear").value="";
   renderAll();
 }
-
-  $("allRows").innerHTML=adminData.slice().reverse().map(x=>{
-    let h=+x.hours||0;
-    total+=h;
-
-    return `<tr>
-      <td>${displayDate(x.date)}</td>
-      <td>${x.employee}</td>
-      <td>${x.start}–${x.end}</td>
-      <td>${h.toFixed(2)}</td>
-      <td>${x.work}${x.other?": "+x.other:""}</td>
-    </tr>`;
-  }).join("");
-
-  $("allTotal").textContent=total.toFixed(2).replace(".",",")+" uur";
-}
 loadPublic();
-(function(){try{let u=JSON.parse(localStorage.getItem("kantineUser"));if(u&&u.id){current=u;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("who").textContent="Ingelogd als "+u.name;$("employeeLocked").value=u.name;loadEmployeeData()}}catch(e){}})();
-</script></body></html>
+
+(function(){
+  try{
+    let u=JSON.parse(localStorage.getItem("kantineUser"));
+    if(u&&u.id){
+      current=u;
+      $("login").classList.add("hidden");
+      $("app").classList.remove("hidden");
+      $("who").textContent="Ingelogd als "+u.name;
+      $("employeeLocked").value=u.name;
+      loadEmployeeData();
+    }
+  }catch(e){}
+})();
+  </script>
+</body>
+</html>
