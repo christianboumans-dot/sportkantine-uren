@@ -156,6 +156,7 @@ function renderAll(){
 
   $("allTotal").textContent=total.toFixed(2).replace(".",",")+" uur";
 }
+}
 loadPublic();
 (function(){try{let u=JSON.parse(localStorage.getItem("kantineUser"));if(u&&u.id){current=u;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("who").textContent="Ingelogd als "+u.name;$("employeeLocked").value=u.name;loadEmployeeData()}}catch(e){}})();
 </script></body></html>
