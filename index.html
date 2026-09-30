@@ -48,7 +48,31 @@ button{background:#f28c00;color:#fff;border:0;font-weight:bold}button.dark{backg
 <section id="staff" class="adminPage"><div class="card"><h3>Personeel beheren</h3><div class="grid"><div><label>Naam werknemer</label><input id="newName"></div><div><label>PIN</label><input id="newPin" inputmode="numeric" maxlength="8"></div></div>
 <button onclick="addEmployee()">➕ Werknemer toevoegen</button><div id="adminMsg" class="msg"></div></div>
 <div class="card"><h3>Werknemers</h3><div style="overflow:auto"><table><thead><tr><th>Naam</th><th>Status</th><th>PIN</th><th>Actie</th></tr></thead><tbody id="staffRows"></tbody></table></div></div></section>
-<section id="adminData" class="adminPage hidden"><div class="card"><h3>Alle uren</h3><div style="overflow:auto"><table><thead><tr><th>Datum</th><th>Medewerker</th><th>Tijd</th><th>Uren</th><th>Werk</th></tr></thead><tbody id="allRows"></tbody></table></div></div></section>
+<section id="adminData" class="adminPage hidden">
+<div class="card">
+<h3>Alle uren</h3>
+
+<div class="stat" style="margin-bottom:15px">
+Totaal: <span id="allTotal">0,00 uur</span>
+</div>
+
+<div style="overflow:auto">
+<table>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Medewerker</th>
+<th>Tijd</th>
+<th>Uren</th>
+<th>Werk</th>
+</tr>
+</thead>
+<tbody id="allRows"></tbody>
+</table>
+</div>
+
+</div>
+</section>
 </section>
 </main>
 <script>
