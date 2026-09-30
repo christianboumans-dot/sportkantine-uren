@@ -52,8 +52,31 @@ button{background:#f28c00;color:#fff;border:0;font-weight:bold}button.dark{backg
 <div class="card">
 <h3>Alle uren</h3>
 
-<div class="stat" style="margin-bottom:15px">
-Totaal: <span id="allTotal">0,00 uur</span>
+<div class="grid">
+  <div>
+    <label>Medewerker</label>
+    <select id="filterEmployee" onchange="renderAll()">
+      <option value="">Alle medewerkers</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Maand</label>
+    <input id="filterMonth" type="month" onchange="renderAll()">
+  </div>
+
+  <div>
+    <label>Jaar</label>
+    <select id="filterYear" onchange="renderAll()">
+      <option value="">Alle jaren</option>
+    </select>
+  </div>
+</div>
+
+<button class="dark" onclick="clearFilters()">🔄 Filters wissen</button>
+
+<div class="stat" style="margin:15px 0">
+  Totaal: <span id="allTotal">0,00 uur</span>
 </div>
 
 <div style="overflow:auto">
@@ -130,6 +153,77 @@ function addEmployee(){let name=$("newName").value.trim(),pin=$("newPin").value.
 function adminLoginRefresh(){jsonp({action:"adminData"},r=>{adminEmployees=r.employees||[];adminData=r.data||[];renderStaff();renderAll()})}
 function renderAll(){
   let total=0;
+
+  const employeeFilter=$("filterEmployee").value;
+  const monthFilter=$("filterMonth").value;
+  const yearFilter=$("filterYear").value;
+
+  const filtered=adminData.filter(x=>{
+    if(employeeFilter && x.employeeId!==employeeFilter)return false;
+
+    if(monthFilter && String(x.date).slice(0,7)!==monthFilter)return false;
+
+    if(yearFilter && String(x.date).slice(0,4)!==yearFilter)return false;
+
+    return true;
+  });
+
+  $("allRows").innerHTML=filtered.slice().reverse().map(x=>{
+    let h=+x.hours||0;
+    total+=h;
+
+    return `<tr>
+      <td>${displayDate(x.date)}</td>
+      <td>${x.employee}</td>
+      <td>${x.start}–${x.end}</td>
+      <td>${h.toFixed(2)}</td>
+      <td>${x.work}${x.other?": "+x.other:""}</td>
+    </tr>`;
+  }).join("");
+
+  $("allTotal").textContent=total.toFixed(2).replace(".",",")+" uur";
+
+  fillFilters();
+}
+ function fillFilters(){
+  const employeeSelect=$("filterEmployee");
+  const yearSelect=$("filterYear");
+
+  const selectedEmployee=employeeSelect.value;
+  const selectedYear=yearSelect.value;
+
+  const employees={};
+
+  adminEmployees.forEach(e=>{
+    employees[e.id]=e.name;
+  });
+
+  employeeSelect.innerHTML=
+    `<option value="">Alle medewerkers</option>`+
+    Object.entries(employees)
+      .map(([id,name])=>`<option value="${id}">${name}</option>`)
+      .join("");
+
+  employeeSelect.value=selectedEmployee;
+
+  const years=[...new Set(
+    adminData
+      .map(x=>String(x.date).slice(0,4))
+      .filter(x=>/^\d{4}$/.test(x))
+  )].sort();
+
+  yearSelect.innerHTML=
+    `<option value="">Alle jaren</option>`+
+    years.map(y=>`<option value="${y}">${y}</option>`).join("");
+
+  yearSelect.value=selectedYear;
+}
+ function clearFilters(){
+  $("filterEmployee").value="";
+  $("filterMonth").value="";
+  $("filterYear").value="";
+  renderAll();
+}
 
   $("allRows").innerHTML=adminData.slice().reverse().map(x=>{
     let h=+x.hours||0;
