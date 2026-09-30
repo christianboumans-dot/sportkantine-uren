@@ -126,7 +126,22 @@ jsonp({action:"login",name,pin},r=>{if(r.ok){current=r;localStorage.setItem("kan
 function loadEmployeeData(){jsonp({action:"employeeData",id:current.id},r=>{data=r.data||[];renderData();renderCalendar()})}
 function show(id){document.querySelectorAll("#app .page").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");if(id==="overview")renderData();if(id==="calendar")renderCalendar()}
 function logout(){localStorage.removeItem("kantineUser");current=null;data=[];$("app").classList.add("hidden");$("login").classList.remove("hidden");$("who").textContent="";$("loginPin").value=""}
-function hours(s,e,b){let a=s.split(":").map(Number),z=e.split(":").map(Number),m=z[0]*60+z[1]-(a[0]*60+a[1]);if(m<0)m+=1440;return Math.max(0,m-Number(b||0))/60}
+function hours(s,e,b){
+  const startParts=s.split(":").map(Number);
+  const endParts=e.split(":").map(Number);
+
+  let startMinutes=startParts[0]*60+startParts[1];
+  let endMinutes=endParts[0]*60+endParts[1];
+
+  if(endMinutes<startMinutes){
+    endMinutes+=24*60;
+  }
+
+  const breakMinutes=Number(b)||0;
+  const totalMinutes=endMinutes-startMinutes-breakMinutes;
+
+  return Math.round((totalMinutes/60)*100)/100;
+}
 function save(){let w=$("work").value;if(!$("date").value||!$("start").value||!$("end").value){$("msg").textContent="Vul datum, begin en einde in.";return}if(w==="Overige"&&!$("other").value.trim()){$("msg").textContent="Vul de overige werkzaamheden in.";return}$("msg").textContent="Opslaan...";
 post({action:"addShift",employeeId:current.id,employee:current.name,date:$("date").value,start:$("start").value,end:$("end").value,breakMin:$("break").value||0,hours:hours($("start").value,$("end").value,$("break").value),work:w,other:$("other").value,note:$("note").value},ok=>{$("msg").textContent=ok?"Dienst opgeslagen.":"Opslaan mislukt.";if(ok){$("msg").className="msg ok";$("note").value="";$("other").value="";loadEmployeeData()}})}
 function displayDate(v){
